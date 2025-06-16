@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Väderstation – Badplats</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f9ff;
+      color: #333;
+      padding: 1rem;
+      text-align: center;
+    }
+    .box {
+      background: #fff;
+      padding: 1.5rem;
+      margin: auto;
+      max-width: 600px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #0077b6;
+    }
+    canvas {
+      margin-top: 20px;
+    }
+    .latest {
+      font-size: 1.3rem;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>🌊 Badplats – Temperaturhistorik</h1>
+    <div class="latest" id="latest-info">Laddar data...</div>
+    <canvas id="tempChart" width="400" height="200"></canvas>
+  </div>
+
+  <script>
+    fetch('/data.json')
+      .then(res => res.json())
+      .then(data => {
+        const dates = data.map(d => d.date);
+        const temps = data.map(d => d.temperature);
+        const latest = data[data.length - 1];
+        document.getElementById("latest-info").innerHTML =
+          `Senast uppmätt: <strong>${latest.temperature} °C</strong> – ${latest.date} ${latest.time}`;
+
+        new Chart(document.getElementById("tempChart"), {
+          type: 'line',
+          data: {
+            labels: dates,
+            datasets: [{
+              label: "Temperatur (°C)",
+              data: temps,
+              fill: false,
+              borderColor: "#0077b6",
+              tension: 0.2
+            }]
+          },
+          options: {
+            scales: {
+              y: { beginAtZero: false },
+              x: { title: { display: true, text: "Datum" } }
+            },
+            plugins: {
+              legend: { display: true }
+            }
+          }
+        });
+      })
+      .catch(err => {
+        document.getElementById("latest-info").innerHTML =
+          "Kunde inte läsa data från enheten.";
+      });
+  </script>
+</body>
+</html>
